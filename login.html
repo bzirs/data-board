@@ -128,11 +128,19 @@
       if (!regPassword.test(password)) return setHint('密码长度为6-30个字符')
 
       // 发起axios请求
-      axios.post('/login', formData).then(({ data: { message, data: { username } } }) => {
-        setHint(message + ',欢迎您:' + username)
+      axios.post('/login', formData).then(({ data: { message, data } }) => {
+        const { username, token } = data
+        setHint(message + '，欢迎您：' + username + '，一秒后将跳转到首页')
+        console.log(data)
+        // 将用户的信息存到localStorage
+        localStorage.setItem('userInfo', JSON.stringify(data))
+
 
         // 跳转index页面
-        location.href = 'index.html'
+        setTimeout(() => {
+          location.href = 'index.html'
+
+        }, 1000);
       }).catch(({ response: { data: { message } } }) => {
         setHint(message)
 
