@@ -16,7 +16,7 @@ const toast = new bootstrap.Toast(toastBox, {
 
 // 封装显示提示信息
 let setHint = (val) => {
-	toastBody.innerHTML = val;
+	document.querySelector(".toast-body").innerHTML = val;
 	toast.show();
 };
 
