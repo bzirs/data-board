@@ -279,12 +279,9 @@
     // 获取学生统计信息
     axios({
       url: '/dashboard',
-      method: 'get',
-      headers: {
-        Authorization: token
-      }
+      method: 'get'
     }).then(r => {
-      const { data: { data: { provinceData, overview } } } = r
+      const { data: { provinceData, overview } } = r
       console.log(r)
 
       // 遍历对象改变值
@@ -293,6 +290,12 @@
 
       }
 
+    })
+
+    // 退出功能
+    document.querySelector('#logout').addEventListener('click', function () {
+      confirm('确定要退出吗?') ? (location.href = "login.html",
+        localStorage.clear()) : ''
     })
   </script>
 </body>
