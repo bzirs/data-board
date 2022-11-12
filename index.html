@@ -270,7 +270,7 @@
   <script src="./js/common.js"></script>
   <script src="./lib/china.js"></script>
   <script>
-    // 从localStorage取出username
+    // 从localStorage取出username 登陆拦截
     const { username, token } = JSON.parse(localStorage.getItem('userInfo')) || (location.href = 'login.html')
 
 
@@ -283,7 +283,6 @@
       method: 'get'
     }).then(r => {
       const { data: { provinceData, overview, year, salaryData, groupData } } = r
-      console.log(r)
 
       // 平均薪资走势图
       setPayTrend(year)
