@@ -281,7 +281,7 @@
       url: '/dashboard',
       method: 'get'
     }).then(r => {
-      const { data: { provinceData, overview, year, salaryData } } = r
+      const { data: { provinceData, overview, year, salaryData, groupData } } = r
       console.log(r)
 
       // 平均薪资走势图
@@ -289,6 +289,25 @@
 
       // 班级薪资分布
       setPie(salaryData)
+
+      // 柱状图
+      setBar(groupData['1'])
+
+      // 籍贯
+      setMap(provinceData)
+
+      // 给柱状图的tab添加点击事件
+      document.querySelector('#btns').addEventListener('click', function (e) {
+        if (e.target.tagName === 'BUTTON') {
+          // console.log(e.target.innerHTML)
+          // console.log(groupData[e.target.innerHTML])
+          document.querySelector('button[class="btn btn-xs btn-blue"]').classList.remove('btn-blue')
+          e.target.classList.add('btn-blue')
+          setBar(groupData[e.target.innerHTML])
+
+
+        }
+      })
 
       // 遍历对象改变值
       for (const key in overview) {
@@ -474,6 +493,220 @@
 
       myChart.setOption(option)
     }
+
+    // 柱状图
+    const setBar = data => {
+      const myChart = echarts.init(document.querySelector('#lines'))
+
+      myChart.setOption({
+        grid: {
+          left: 70,
+          top: 30,
+          right: 30,
+          bottom: 50,
+        },
+        tooltip: {
+          trigger: 'item',
+        },
+        xAxis: {
+          type: 'category',
+          data: data.map(({ name }) => name),
+          axisLine: {
+            lineStyle: {
+              color: '#ccc',
+              type: 'dashed'
+            }
+          },
+          axisLabel: {
+            color: '#999'
+          }
+        },
+        yAxis: {
+          type: 'value',
+          splitLine: {
+            lineStyle: {
+              type: 'dashed'
+            }
+          }
+        },
+        series: [
+          {
+            data: data.map(({ hope_salary }) => hope_salary),
+            type: 'bar',
+            name: '期望薪资'
+          },
+          {
+            data: data.map(({ salary }) => salary),
+            type: 'bar',
+            name: '就业薪资'
+          }
+        ],
+        color: [
+          {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              {
+                offset: 0,
+                color: '#34D39A', // 0% 处的颜色
+              },
+              {
+                offset: 1,
+                color: 'rgba(52,211,154,0.2)', // 100% 处的颜色
+              },
+            ],
+          },
+          {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              {
+                offset: 0,
+                color: '#499FEE', // 0% 处的颜色
+              },
+              {
+                offset: 1,
+                color: 'rgba(73,159,238,0.2)', // 100% 处的颜色
+              },
+            ],
+          },
+        ],
+      })
+    }
+
+    // 籍贯
+    const setMap = data => {
+      const myEchart = echarts.init(document.querySelector('#map'))
+
+      const dataList = [
+        { name: '南海诸岛', value: 0 },
+        { name: '北京', value: 0 },
+        { name: '天津', value: 0 },
+        { name: '上海', value: 0 },
+        { name: '重庆', value: 0 },
+        { name: '河北', value: 0 },
+        { name: '河南', value: 0 },
+        { name: '云南', value: 0 },
+        { name: '辽宁', value: 0 },
+        { name: '黑龙江', value: 0 },
+        { name: '湖南', value: 0 },
+        { name: '安徽', value: 0 },
+        { name: '山东', value: 0 },
+        { name: '新疆', value: 0 },
+        { name: '江苏', value: 0 },
+        { name: '浙江', value: 0 },
+        { name: '江西', value: 0 },
+        { name: '湖北', value: 0 },
+        { name: '广西', value: 0 },
+        { name: '甘肃', value: 0 },
+        { name: '山西', value: 0 },
+        { name: '内蒙古', value: 0 },
+        { name: '陕西', value: 0 },
+        { name: '吉林', value: 0 },
+        { name: '福建', value: 0 },
+        { name: '贵州', value: 0 },
+        { name: '广东', value: 0 },
+        { name: '青海', value: 0 },
+        { name: '西藏', value: 0 },
+        { name: '四川', value: 0 },
+        { name: '宁夏', value: 0 },
+        { name: '海南', value: 0 },
+        { name: '台湾', value: 0 },
+        { name: '香港', value: 0 },
+        { name: '澳门', value: 0 },
+      ]
+
+      let max = 0
+      dataList.forEach(element => {
+        const obj = data.find(pro => (pro.name.indexOf(element.name) !== -1))
+
+        if (!obj) return
+        element.value = obj.value
+        max < obj.value ? max = obj.value : ''
+
+
+      });
+
+
+
+
+      let option = {
+        title: {
+          text: '籍贯分布',
+          top: 10,
+          left: 10,
+          textStyle: {
+            fontSize: 16,
+          },
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{b}: {c} 位学员',
+          borderColor: 'transparent',
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          textStyle: {
+            color: '#fff',
+          },
+        },
+        visualMap: {
+          min: 0,
+          max: 6,
+          left: 'left',
+          bottom: '20',
+          text: [max, '0'],
+          inRange: {
+            color: ['#ffffff', '#0075F0'],
+          },
+          show: true,
+          left: 40,
+        },
+        geo: { // 地理坐标系组件
+          map: 'china',
+          roam: false,
+          zoom: 1.0,
+          label: {
+            normal: {
+              show: true,
+              fontSize: '10',
+              color: 'rgba(0,0,0,0.7)',
+            },
+          },
+          itemStyle: {
+            normal: {
+              borderColor: 'rgba(0, 0, 0, 0.2)',
+              color: '#e0ffff',
+            },
+            emphasis: {
+              areaColor: '#34D39A',
+              shadowOffsetX: 0,
+              shadowOffsetY: 0,
+              shadowBlur: 20,
+              borderWidth: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)',
+            },
+          },
+        },
+        series: [
+          {
+            name: '籍贯分布',
+            type: 'map',
+            geoIndex: 0,
+            data: dataList,
+          },
+        ],
+      }
+      myEchart.setOption(option)
+
+    }
+
+    // 没成功的获取数组
+    const getInfo = (data, ...item) => data.map(({ item }) => item)
   </script>
 </body>
 
