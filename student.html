@@ -167,7 +167,7 @@
                         src="https://yanxuan-item.nosdn.127.net/8b27deb1670c53e67c42ca3e1ed6fd12.jpg" />
                     </span>
                     <div class="ml-2 d-none d-lg-block">
-                      <span class="mb-0 text-sm font-weight-bold">Admin</span>
+                      <span class="mb-0 text-sm font-weight-bold" id="username">Admin</span>
                     </div>
                   </div>
                 </a>
@@ -210,7 +210,7 @@
                       <th>操作</th>
                     </tr>
                   </thead>
-                  <tbody class="list">
+                  <tbody class="list" id="tbody">
                     <!-- <tr>
                       <td>张杰</td>
                       <td>20</td>
@@ -335,12 +335,146 @@
       </div>
     </div>
   </div>
+  <!-- toast -->
+  <div class="position-fixed top-0 start-50 pt-4" style="z-index: 999; transform: translateX(-50%)">
+    <div id="myToast" class="toast bg-rgba">
+      <div class="toast-body">提示消息</div>
+    </div>
+  </div>
   <script src="./bootstrap/bootstrap.min.js"></script>
   <script src="./lib/axios.js"></script>
   <script src="./lib/form-serialize.js"></script>
   <script src="./js/common.js"></script>
   <script>
+    // 从localStorage取出username 登陆拦截
+    const { username, token } = JSON.parse(localStorage.getItem('userInfo')) || (location.href = 'login.html')
 
+    document.querySelector('#username').innerHTML = username
+
+    // 退出功能
+    document.querySelector('#logout').addEventListener('click', function () {
+      confirm('确定要退出吗?') ? (location.href = "login.html",
+        localStorage.clear()) : ''
+    });
+
+    const tbody = document.querySelector('#tbody')
+
+
+
+    const getStudentInfo = () => {
+      // 请求学生列表
+      axios.get('/students')
+        .then(function ({ data }) {
+          // 处理成功情况
+          tbody.innerHTML = render(data)
+          document.querySelector('.total').innerHTML = data.length
+        })
+        .catch(function (error) {
+          // 处理错误情况
+          console.log(error);
+        })
+    }
+
+
+
+    // 请求学生列表
+    getStudentInfo()
+
+
+
+    // 添加删除事件
+    tbody.addEventListener('click', function (e) {
+      if (e.target.classList.contains('bi-trash')) {
+        if (!confirm('真的要删除吗?')) return
+
+        axios.delete(`/students/${e.target.dataset.id}`).then(r => {
+          setHint('删除成功')
+          getStudentInfo()
+        })
+      }
+    })
+
+    // 添加学生模态框
+    const addStudenModal = new bootstrap.Modal(document.querySelector('#modal'))
+    // 打开添加学生模态框
+    document.querySelector('#openModal').addEventListener('click', function () {
+      addStudenModal.show()
+      // 请求城市列表
+      getCityInfo()
+    })
+
+    document.querySelector('#submit').addEventListener('click', function () {
+      const formInfo = serialize(form, { hash: true });
+      const { name = '', age = NaN, gender = '', hope_salary = '', salary = '', group = '', province = '', city = '', area = '' } = formInfo
+      console.log(formInfo)
+    })
+
+    const render = (data) => data.map(({ id, user_id, name, age, gender, hope_salary, salary, group, province, city, area }) => `
+    <tr>
+            <td>${name}</td>
+            <td>${age}</td>
+            <td>${gender}</td>
+            <td>${group}</td>
+            <td>${hope_salary}</td>
+            <td>${salary}</td>
+            <td>${province + city + area}</td>
+            <td>
+              <a href="javascript:;" class="text-success mr-3"><i data-id=${id} class="bi bi-pen"></i></a>
+              <a href="javascript:;" class="text-danger"><i data-id=${id} class="bi bi-trash"></i></a>
+            </td>
+          </tr>
+    `).join('')
+
+    // 省市区三级联动
+    // 请求省列表
+    const province = document.querySelector('select[name="province"]')
+    const getCityInfo = () => {
+
+      axios({
+        url: `/api/province`,
+        method: 'get'
+
+      }).then(({ data }) => {
+        province.innerHTML += getCityList(data)
+      }).catch((err) => {
+        console.log(err)
+      })
+    }
+
+    const getCityList = (data) => data.map(res => `
+        <option value="${res}">${res}</option>
+        `)
+
+    // 给省份列表注册change事件请求城市列表
+    province.addEventListener('change', function () {
+      this.nextElementSibling.innerHTML = `<option value="">--城市--</option>`
+      this.nextElementSibling.nextElementSibling.innerHTML = `<option value="">--地区--</option>`
+
+
+      axios.get('/api/city', {
+        params: {
+          pname: this.value
+        }
+      })
+        .then(({ data }) => {
+          // 处理成功情况
+          this.nextElementSibling.innerHTML += getCityList(data)
+        })
+    })
+    province.nextElementSibling.addEventListener('change', function () {
+      this.nextElementSibling.innerHTML = `<option value="">--地区--</option>`
+
+      axios.get('/api/area', {
+        params: {
+          pname: this.previousElementSibling.value,
+          cname: this.value
+        }
+      })
+        .then(({ data }) => {
+          // 处理成功情况
+          this.nextElementSibling.innerHTML += getCityList(data)
+        })
+    })
   </script>
 </body>
 
