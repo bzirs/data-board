@@ -140,7 +140,13 @@
 				console.log(formData);
 
 				// 发起注册请求
-				axios.post("/register", formData).then(({ data: { id, account }, message }) => setHint(message)).catch(({ response: { data: { message } } }) => setHint(message))
+				axios.post("/register", formData).then(({ data: { id, account }, message }) => {
+					setHint(message)
+					// 注册成功跳转登录页面
+					setTimeout(() => {
+						location.href = 'login.html'
+					}, 1000);
+				}).catch(({ response: { data: { message } } }) => setHint(message))
 			});
 	</script>
 </body>
